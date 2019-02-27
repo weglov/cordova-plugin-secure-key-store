@@ -8,8 +8,8 @@ var SecureKeyStore = {
 		exec(success, error, this.serviceName, "set", [key, value]);
 	},
 
-	get: function(success, error, key) {
-		exec(success, error, this.serviceName, "get", [key]);
+	get: function(success, error, key, token) {
+		exec(success, error, this.serviceName, "get", [key, token]);
 	},
 
 	remove: function(success, error, key) {

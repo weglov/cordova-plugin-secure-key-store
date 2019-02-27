@@ -44,7 +44,8 @@ public class SecureKeyStore extends CordovaPlugin {
 
         if (action.equals("get")) {
             String alias = args.getString(0);
-            this.decrypt(alias, callbackContext);
+            String token = args.getString(1);
+            this.decrypt(alias, token, callbackContext);
             return true;
         }
 
@@ -108,30 +109,19 @@ public class SecureKeyStore extends CordovaPlugin {
 
     }
 
-    private void decrypt(String alias, CallbackContext callbackContext) {
+    private void decrypt(String alias, String token, CallbackContext callbackContext) {
 
         try {
 
             KeyStore keyStore = KeyStore.getInstance(getKeyStore());
             keyStore.load(null);
-            PrivateKey privateKey = (PrivateKey) keyStore.getKey(alias, null);
+            KeyStore.Entry entry = keyStore.getEntry(alias, null);
+            KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) entry;
+            PrivateKey privateKey = privateKeyEntry.getPrivateKey();
 
             Cipher output = Cipher.getInstance(Constants.RSA_ALGORITHM);
             output.init(Cipher.DECRYPT_MODE, privateKey);
-            CipherInputStream cipherInputStream = new CipherInputStream(
-                    new ByteArrayInputStream(KeyStorage.readValues(getContext(), alias)), output);
-
-            ArrayList<Byte> values = new ArrayList<Byte>();
-            int nextByte;
-            while ((nextByte = cipherInputStream.read()) != -1) {
-                values.add((byte) nextByte);
-            }
-            byte[] bytes = new byte[values.size()];
-            for (int i = 0; i < bytes.length; i++) {
-                bytes[i] = values.get(i).byteValue();
-            }
-
-            String finalText = new String(bytes, 0, bytes.length, "UTF-8");
+            String finalText = String(output.doFinal(Base64.decode(token, Base64.NO_WRAP)))
             callbackContext.success(finalText);
 
         } catch (Exception e) {
