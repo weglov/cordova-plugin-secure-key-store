@@ -121,7 +121,7 @@ public class SecureKeyStore extends CordovaPlugin {
 
             Cipher output = Cipher.getInstance(Constants.RSA_ALGORITHM);
             output.init(Cipher.DECRYPT_MODE, privateKey);
-            String finalText = String(output.doFinal(Base64.decode(token, Base64.NO_WRAP)))
+            String finalText = new String(output.doFinal(Base64.decode(token, Base64.NO_WRAP)));
             callbackContext.success(finalText);
 
         } catch (Exception e) {
